@@ -1,0 +1,78 @@
+<html>
+<body>
+
+<script src="../wail.js"></script>
+<!-- wabt.js used for compiling WAT to WASM -->
+<script src="https://cdn.jsdelivr.net/gh/AssemblyScript/wabt.js/index.js"></script>
+<script>
+
+WabtModule().then(function(wabt) {
+
+const wasmText = `
+(module
+  (start $main)
+  (func $main
+    call $replaceMe
+    drop)
+  (func $replaceMe (result i32)
+    i32.const 0
+    return))
+`;
+
+const wat = wabt.parseWat('replace_function.wast', wasmText);
+const binary = wat.toBinary({});
+
+const replacementFunc = function() {
+    console.log("Replacement function called");
+
+    return 1337;
+}
+
+const importObject = {
+    env: {
+        replacementFunc: replacementFunc,
+    },
+};
+
+const wail = new WailParser(binary.buffer);
+
+const replacementFuncType = wail.addTypeEntry({
+    form: "func",
+    params: [],
+    returnType: "i32"
+});
+
+const replacementFuncIndex = wail.addImportEntry({
+    moduleStr: "env",
+    fieldStr: "replacementFunc",
+    kind: "func",
+    type: replacementFuncType
+});
+
+const oldFuncIndex = wail.getFunctionIndex(1);
+
+wail.addInstructionParser(OP_CALL, function(instrBytes) {
+    const reader = new BufferReader(instrBytes);
+
+    const opcode = reader.readUint8();
+    const callTarget = reader.readVarUint32();
+
+    if (callTarget == oldFuncIndex.i32()) {
+        reader.writeBuffer([opcode]);
+        reader.writeBuffer(VarUint32ToArray(replacementFuncIndex.i32()));
+
+        return reader.write();
+    }
+
+    return instrBytes;
+});
+
+wail.parse();
+
+WebAssembly.instantiate(wail.write(), importObject);
+
+});
+</script>
+
+</body>
+</html>

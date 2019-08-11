@@ -1,0 +1,39 @@
+<html>
+<body>
+
+<script src="../wail.js"></script>
+<!-- wabt.js used for compiling WAT to WASM -->
+<script src="https://cdn.jsdelivr.net/gh/AssemblyScript/wabt.js/index.js"></script>
+<script>
+
+WabtModule().then(function(wabt) {
+
+const wasmText = `
+(module
+  (func $nameMe1
+    return)
+  (func $nameMe2
+    return))
+`;
+
+const wat = wabt.parseWat('add_symbols.wast', wasmText);
+const binary = wat.toBinary({});
+
+const wail = new WailParser(binary.buffer);
+
+wail.addRawSection(0, []);
+
+wail.addExportEntry(1, {
+    fieldStr: "functionName1",
+    kind: "func",
+});
+
+wail.parse();
+
+WebAssembly.instantiate(wail.write());
+
+});
+</script>
+
+</body>
+</html>

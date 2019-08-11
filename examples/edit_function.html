@@ -1,0 +1,45 @@
+<html>
+<body>
+
+<script src="../wail.js"></script>
+<!-- wabt.js used for compiling WAT to WASM -->
+<script src="https://cdn.jsdelivr.net/gh/AssemblyScript/wabt.js/index.js"></script>
+<script>
+
+WabtModule().then(function(wabt) {
+
+const wasmText = `
+(module
+  (func (export "changeMe") (result i32)
+    i32.const 0
+    return))
+`;
+
+const wat = wabt.parseWat('edit_function.wast', wasmText);
+
+const binary = wat.toBinary({});
+
+const wail = new WailParser(binary.buffer);
+
+const oldFuncIndex = wail.getFunctionIndex(0);
+
+wail.editCodeEntry(oldFuncIndex, {
+    locals: [],
+    code: [
+        OP_I32_CONST, VarUint32(1337),
+        OP_RETURN,
+        OP_END
+    ]
+});
+
+wail.parse();
+
+WebAssembly.instantiate(wail.write()).then(function(wasm) {
+    console.log(wasm.instance.exports.changeMe());
+});
+
+});
+</script>
+
+</body>
+</html>

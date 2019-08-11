@@ -1,0 +1,65 @@
+<html>
+<body>
+
+<script src="../wail.js"></script>
+<!-- wabt.js used for compiling WAT to WASM -->
+<script src="https://cdn.jsdelivr.net/gh/AssemblyScript/wabt.js/index.js"></script>
+<script>
+
+WabtModule().then(function(wabt) {
+
+const logString = function(offset) {
+    const bytes = new Uint8Array(memory.buffer, offset);
+
+    const stringBytes = [];
+
+    for (i = 0; bytes[i] !== 0x00; i++) {
+        stringBytes.push(bytes[i]);
+    }
+
+    const stringArray = new Uint8Array(stringBytes);
+
+    const string = new TextDecoder('utf8').decode(stringArray);
+
+    console.log(string);
+}
+
+const wasmText = `
+(module
+  (import "env" "log" (func $log (param i32)))
+  (import "env" "mem" (memory 1))
+  (data (i32.const 0) "Old Text")
+  (func (export "printMsg")
+    i32.const 0
+    call $log))
+`;
+
+const wat = wabt.parseWat('change_string.wast', wasmText);
+const binary = wat.toBinary({});
+
+const memory = new WebAssembly.Memory({initial:1});
+
+const importObject = {
+    env: {
+        log: logString,
+        mem: memory
+    },
+};
+
+const wail = new WailParser(binary.buffer);
+
+wail.editDataEntry(0, {
+    data: "New, longer text"
+});
+
+wail.parse();
+
+WebAssembly.instantiate(wail.write(), importObject).then(function(wasm) {
+    wasm.instance.exports.printMsg();
+});
+
+});
+</script>
+
+</body>
+</html>
