@@ -2391,7 +2391,7 @@ class WailParser extends BufferReader {
                 }
             }
 
-            let newIndex;
+            let newIndex = oldIndex;
 
             if (oldIndex instanceof WailVariable) {
                 newIndex = oldIndex.value;
