@@ -26,8 +26,9 @@ const SECTION_START          = 8;
 const SECTION_ELEMENT        = 9;
 const SECTION_CODE           = 10;
 const SECTION_DATA           = 11;
+const SECTION_DATACOUNT      = 12
 
-const MAX_SECTION_ID         = 11;
+const MAX_SECTION_ID         = 12;
 
 const KIND_FUNC              = 0x00;
 const KIND_TABLE             = 0x01;
