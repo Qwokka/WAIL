@@ -252,6 +252,21 @@ const OP_I32_REINTERPRET_F32 = 0xbc;
 const OP_I64_REINTERPRET_F64 = 0xbd;
 const OP_F32_REINTERPRET_I32 = 0xbe;
 const OP_F64_REINTERPRET_I64 = 0xbf;
+const OP_I32_EXTEND8_S       = 0xc0;
+const OP_I32_EXTEND16_S      = 0xc1;
+const OP_I64_EXTEND8_S       = 0xc2;
+const OP_I64_EXTEND16_S      = 0xc3;
+const OP_I64_EXTEND32_S      = 0xc4;
+const OP_BULK_MEMORY         = 0xfc;
+const OP_ATOMIC              = 0xfe;
+
+const ARG_MEMORY_INIT        = 0x08;
+const ARG_DATA_DROP          = 0x09;
+const ARG_MEMORY_COPY        = 0x0a;
+const ARG_MEMORY_FILL        = 0x0b;
+const ARG_TABLE_INIT         = 0x0c;
+const ARG_ELEM_DROP          = 0x0d;
+const ARG_TABLE_COPY         = 0x0e;
 
 const convertOpcode = function(string) {
     const opcodeVal = opcodeStr[string];
@@ -2972,6 +2987,7 @@ class WailParser extends BufferReader {
 
         let oldTarget;
         let newTarget;
+        let arg;
 
         switch (opcode) {
             case OP_UNREACHABLE:
@@ -3184,6 +3200,50 @@ class WailParser extends BufferReader {
             case OP_CALL_INDIRECT:
                 reader.readVarUint32();
                 reader.readUint8();
+                break;
+            case OP_I32_EXTEND8_S:
+            case OP_I32_EXTEND16_S:
+            case OP_I64_EXTEND8_S:
+            case OP_I64_EXTEND16_S:
+            case OP_I64_EXTEND32_S:
+                break;
+            case OP_BULK_MEMORY:
+                arg = reader.readUint8();
+
+                switch (arg) {
+                    case ARG_MEMORY_INIT:
+                    case ARG_TABLE_INIT:
+                        reader.readVarUint32();
+                        reader.readUint8();
+                        break;
+                    case ARG_DATA_DROP:
+                    case ARG_ELEM_DROP:
+                        reader.readVarUint32();
+                        break;
+                    case ARG_MEMORY_COPY:
+                    case ARG_TABLE_COPY:
+                        reader.readUint8();
+                        reader.readUint8();
+                        break;
+                    case ARG_MEMORY_FILL:
+                        reader.readUint8();
+                        break;
+                }
+                break;
+            case OP_ATOMIC:
+                arg = reader.readUint8();
+
+                // TODO Should replace this with constants
+                if (arg > 0x4E) {
+                    throw new Error("Unknown argument '" + arg + "' for OP_ATOMIC. Probably parsing incorrectly");
+                }
+
+                // FF 03 (atomic.fence) does not have any other immediates
+                if (arg != 0x03) {
+                    reader.readUint8();
+                    reader.readVarUint32();
+                }
+
                 break;
             default:
                 throw new Error("Unknown opcode '" + opcode + "'. Probably parsing incorrectly");
