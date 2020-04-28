@@ -1547,50 +1547,55 @@ class WailParser extends BufferReader {
             parseSection = true;
         }
 
-        // At this point we want to check if a required section does not exist
-        // If so, we want to add an empty version of that section and add any new
-        // elements to it
-        for (let missingId = 0; missingId < id; missingId++) {
-            const thisFlag = 1 << missingId;
+        // The DataCount section violates the usual rule that non-custom sections must occur in
+        // numeric order. As a result, we must not assume a section is missing just because we have
+        // encountered the DataCount section
+        if (id != SECTION_DATACOUNT) {
+            // At this point we want to check if a required section does not exist
+            // If so, we want to add an empty version of that section and add any new
+            // elements to it
+            for (let missingId = 0; missingId < id; missingId++) {
+                const thisFlag = 1 << missingId;
 
-            const thisSectionRequired = this._requiredSectionFlags & thisFlag;
+                const thisSectionRequired = this._requiredSectionFlags & thisFlag;
 
-            if (thisSectionRequired && !(thisSectionRequired & this._parsedSections)) {
-                switch (missingId) {
-                    case SECTION_TYPE:
-                        this._addTypeSection();
-                        break;
-                    case SECTION_IMPORT:
-                        this._addImportSection();
-                        break;
-                    case SECTION_FUNCTION:
-                        this._addFunctionSection();
-                        break;
-                    case SECTION_GLOBAL:
-                        this._addGlobalSection();
-                        break;
-                    case SECTION_EXPORT:
-                        this._addExportSection();
-                        break;
-                    case SECTION_START:
-                        this._addStartSection();
-                        break;
-                    case SECTION_ELEMENT:
-                        this._addElementSection();
-                        break;
-                    case SECTION_CODE:
-                        this._addCodeSection();
-                        break;
-                    case SECTION_DATA:
-                        this._addDataSection();
-                        break;
-                    default:
-                        throw new Error("Attempted to add unhandled section");
+                if (thisSectionRequired && !(thisSectionRequired & this._parsedSections)) {
+                    switch (missingId) {
+                        case SECTION_TYPE:
+                            this._addTypeSection();
+                            break;
+                        case SECTION_IMPORT:
+                            this._addImportSection();
+                            break;
+                        case SECTION_FUNCTION:
+                            this._addFunctionSection();
+                            break;
+                        case SECTION_GLOBAL:
+                            this._addGlobalSection();
+                            break;
+                        case SECTION_EXPORT:
+                            this._addExportSection();
+                            break;
+                        case SECTION_START:
+                            this._addStartSection();
+                            break;
+                        case SECTION_ELEMENT:
+                            this._addElementSection();
+                            break;
+                        case SECTION_CODE:
+                            this._addCodeSection();
+                            break;
+                        case SECTION_DATA:
+                            this._addDataSection();
+                            break;
+                        default:
+                            throw new Error("Attempted to add unhandled section");
+                    }
+
+                    this._parsedSections |= thisFlag;
+
+                    this.copyBuffer([id]);
                 }
-
-                this._parsedSections |= thisFlag;
-
-                this.copyBuffer([id]);
             }
         }
 
