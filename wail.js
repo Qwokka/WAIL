@@ -268,6 +268,73 @@ const ARG_TABLE_INIT         = 0x0c;
 const ARG_ELEM_DROP          = 0x0d;
 const ARG_TABLE_COPY         = 0x0e;
 
+const ARG_ATOMIC_WAKE             = 0x00;
+const ARG_I32_ATOMIC_WAIT         = 0x01;
+const ARG_I64_ATOMIC_WAIT         = 0x02;
+const ARG_I32_ATOMIC_LOAD         = 0x10;
+const ARG_I64_ATOMIC_LOAD         = 0x11;
+const ARG_I32_ATOMIC_LOAD_8U      = 0x12;
+const ARG_I32_ATOMIC_LOAD_16U     = 0x13;
+const ARG_I64_ATOMIC_LOAD_8U      = 0x14;
+const ARG_I64_ATOMIC_LOAD_16U     = 0x15;
+const ARG_I64_ATOMIC_LOAD_32U     = 0x16;
+const ARG_I32_ATOMIC_STORE        = 0x17;
+const ARG_I64_ATOMIC_STORE        = 0x18;
+const ARG_I32_ATOMIC_STORE_8      = 0x19;
+const ARG_I32_ATOMIC_STORE_16     = 0x1A;
+const ARG_I64_ATOMIC_STORE_8      = 0x1B;
+const ARG_I64_ATOMIC_STORE_16     = 0x1C;
+const ARG_I64_ATOMIC_STORE_32     = 0x1D;
+const ARG_I32_ATOMIC_RMW_ADD      = 0x1E;
+const ARG_I64_ATOMIC_RMW_ADD      = 0x1F;
+const ARG_I32_ATOMIC_RMW_ADD_8U   = 0x20;
+const ARG_I32_ATOMIC_RMW_ADD_16U  = 0x21;
+const ARG_I64_ATOMIC_RMW_ADD_8U   = 0x22;
+const ARG_I64_ATOMIC_RMW_ADD_16U  = 0x23;
+const ARG_I64_ATOMIC_RMW_ADD_32U  = 0x24;
+const ARG_I32_ATOMIC_RMW_SUB      = 0x25;
+const ARG_I64_ATOMIC_RMW_SUB      = 0x26;
+const ARG_I32_ATOMIC_RMW_SUB_8U   = 0x27;
+const ARG_I32_ATOMIC_RMW_SUB_16U  = 0x28;
+const ARG_I64_ATOMIC_RMW_SUB_8U   = 0x29;
+const ARG_I64_ATOMIC_RMW_SUB_16U  = 0x2A;
+const ARG_I64_ATOMIC_RMW_SUB_32U  = 0x2B;
+const ARG_I32_ATOMIC_RMW_AND      = 0x2C;
+const ARG_I64_ATOMIC_RMW_AND      = 0x2D;
+const ARG_I32_ATOMIC_RMW_AND_8U   = 0x2E;
+const ARG_I32_ATOMIC_RMW_AND_16U  = 0x2F;
+const ARG_I64_ATOMIC_RMW_AND_8U   = 0x30;
+const ARG_I64_ATOMIC_RMW_AND_16U  = 0x31;
+const ARG_I64_ATOMIC_RMW_AND_32U  = 0x32;
+const ARG_I32_ATOMIC_RMW_OR       = 0x33;
+const ARG_I64_ATOMIC_RMW_OR       = 0x34;
+const ARG_I32_ATOMIC_RMW_OR_8U    = 0x35;
+const ARG_I32_ATOMIC_RMW_OR_16U   = 0x36;
+const ARG_I64_ATOMIC_RMW_OR_8U    = 0x37;
+const ARG_I64_ATOMIC_RMW_OR_16U   = 0x38;
+const ARG_I64_ATOMIC_RMW_OR_32U   = 0x39;
+const ARG_I32_ATOMIC_RMW_XOR      = 0x3A;
+const ARG_I64_ATOMIC_RMW_XOR      = 0x3B;
+const ARG_I32_ATOMIC_RMW_XOR_8U   = 0x3C;
+const ARG_I32_ATOMIC_RMW_XOR_16U  = 0x3D;
+const ARG_I64_ATOMIC_RMW_XOR_8U   = 0x3E;
+const ARG_I64_ATOMIC_RMW_XOR_16U  = 0x3F;
+const ARG_I64_ATOMIC_RMW_XOR_32U  = 0x40;
+const ARG_I32_ATOMIC_RMW_XCHG     = 0x41;
+const ARG_I64_ATOMIC_RMW_XCHG     = 0x42;
+const ARG_I32_ATOMIC_RMW_XCHG_8U  = 0x43;
+const ARG_I32_ATOMIC_RMW_XCHG_16U = 0x44;
+const ARG_I64_ATOMIC_RMW_XCHG_8U  = 0x45;
+const ARG_I64_ATOMIC_RMW_XCHG_16U = 0x46;
+const ARG_I64_ATOMIC_RMW_XCHG_32U = 0x47;
+const ARG_I32_ATOMIC_RMW_CMPXCHG     = 0x48;
+const ARG_I64_ATOMIC_RMW_CMPXCHG     = 0x49;
+const ARG_I32_ATOMIC_RMW_CMPXCHG_8U  = 0x4A;
+const ARG_I32_ATOMIC_RMW_CMPXCHG_16U = 0x4B;
+const ARG_I64_ATOMIC_RMW_CMPXCHG_8U  = 0x4C;
+const ARG_I64_ATOMIC_RMW_CMPXCHG_16U = 0x4D;
+const ARG_I64_ATOMIC_RMW_CMPXCHG_32U = 0x4E;
+
 const convertOpcode = function(string) {
     const opcodeVal = opcodeStr[string];
 
@@ -3238,16 +3305,13 @@ class WailParser extends BufferReader {
             case OP_ATOMIC:
                 arg = reader.readUint8();
 
-                // TODO Should replace this with constants
-                if (arg > 0x4E) {
+                if (arg > ARG_I64_ATOMIC_RMW_CMPXCHG_32U || (arg > 0x2 && arg < 0x10)) {
                     throw new Error("Unknown argument '" + arg + "' for OP_ATOMIC. Probably parsing incorrectly");
                 }
 
-                // FF 03 (atomic.fence) does not have any other immediates
-                if (arg != 0x03) {
-                    reader.readUint8();
-                    reader.readVarUint32();
-                }
+                //reader.readUint8();
+                reader.readVarUint32();
+                reader.readVarUint32();
 
                 break;
             default:
