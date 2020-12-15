@@ -738,6 +738,9 @@ class WailParser extends BufferReader {
         this._importGlobalCount = 0;
         this._importGlobalNewCount = 0;
 
+        this._globalImportCallback = null;
+        this._importCallbacks = [];
+
         this._globalFunctionCallback = null;
         this._functionCallbacks = [];
 
@@ -1023,6 +1026,26 @@ class WailParser extends BufferReader {
         this._sectionOptions[SECTION_IMPORT].existingEntries.push(savedEntry);
 
         this._optionalSectionFlags |= 1 << SECTION_IMPORT;
+    }
+
+    addImportElementParser(index, callback) {
+        if (typeof callback !== "function") {
+            throw new Error("Bad callback in addImportElementParser()");
+        }
+
+        if (index === null) {
+            this._globalImportCallback = callback;
+        }
+        else if (typeof index !== "number" && !(index instanceof WailVariable)) {
+            throw new Error("Bad id "+index+" in addImportElementParser()");
+        }
+        else {
+            const callbackObj = {};
+            callbackObj.index = index;
+            callbackObj.callback = callback;
+
+            this._importCallbacks.push(callbackObj);
+        }
     }
 
     addFunctionEntry(options) {
@@ -2081,6 +2104,18 @@ class WailParser extends BufferReader {
             }
             else {
                 throw "Invalid type kind: " + kind;
+            }
+
+            // TODO Should return value of entry, not just name and kind
+            // TODO Should allow modification
+            if (typeof this._globalImportCallback === "function") {
+                const parameters = {};
+
+                parameters.module = moduleStr;
+                parameters.field = fieldStr;
+                parameters.kind = kind;
+
+                this._globalImportCallback(parameters);
             }
         }
 
