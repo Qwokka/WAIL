@@ -2119,6 +2119,8 @@ class WailParser extends BufferReader {
             }
         }
 
+        reader.commitBytes();
+        
         let newCount = oldCount;
 
         let importFuncIndex = 0;
