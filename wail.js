@@ -3058,23 +3058,25 @@ class WailParser extends BufferReader {
             }
 
             if (funcIndex == thisIndex) {
+                const newHeaderReader = new BufferReader();
                 const newBodyReader = new BufferReader();
 
                 const locals = thisEntry.locals;
 
-                newBodyReader.copyBuffer(VarUint32ToArray(locals.length));
+                newHeaderReader.copyBuffer(VarUint32ToArray(locals.length));
 
                 for (let i = 0; i < locals.length; i++) {
                     const thisLocal = locals[i];
 
-                    newBodyReader.copyBuffer(VarUint32ToArray(1));
-                    newBodyReader.copyBuffer(Uint8ToArray(thisLocal));
+                    newHeaderReader.copyBuffer(VarUint32ToArray(1));
+                    newHeaderReader.copyBuffer(Uint8ToArray(thisLocal));
                 }
 
                 const code = this._expandArrayVariables(thisEntry.code);
 
                 newBodyReader.copyBuffer(code);
 
+                newHeader = newHeaderReader.write();
                 newBody = newBodyReader.write();
             }
         }
