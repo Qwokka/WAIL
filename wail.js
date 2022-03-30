@@ -3337,6 +3337,8 @@ class WailParser extends BufferReader {
                     case ARG_MEMORY_FILL:
                         reader.readUint8();
                         break;
+                    default:
+                        throw new Error("Unknown argument '" + arg + "' for OP_BULK_MEMORY");
                 }
                 break;
             case OP_ATOMIC:
