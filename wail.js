@@ -741,6 +741,9 @@ class WailParser extends BufferReader {
         this._globalImportCallback = null;
         this._importCallbacks = [];
 
+        this._globalExportCallback = null;
+        this._exportCallbacks = [];
+
         this._globalFunctionCallback = null;
         this._functionCallbacks = [];
 
@@ -1316,6 +1319,26 @@ class WailParser extends BufferReader {
         this._sectionOptions[SECTION_EXPORT].existingEntries.push(savedEntry);
 
         this._optionalSectionFlags |= 1 << SECTION_EXPORT;
+    }
+
+    addExportElementParser(index, callback) {
+        if (typeof callback !== "function") {
+            throw new Error("Bad callback in addExportElementParser()");
+        }
+
+        if (index === null) {
+            this._globalExportCallback = callback;
+        }
+        else if (typeof index !== "number" && !(index instanceof WailVariable)) {
+            throw new Error("Bad id "+index+" in addExportElementParser()");
+        }
+        else {
+            const callbackObj = {};
+            callbackObj.index = index;
+            callbackObj.callback = callback;
+
+            this._exportCallbacks.push(callbackObj);
+        }
     }
 
     // There is no addStartEntry since the start section can only have one element
@@ -2533,6 +2556,17 @@ class WailParser extends BufferReader {
             reader.copyBuffer(fieldStr);
             reader.copyBuffer([kind]);
             reader.copyBuffer(VarUint32ToArray(newIndex));
+
+            // TODO Should return value of entry, not just name and kind
+            // TODO Should allow modification
+            if (typeof this._globalExportCallback === "function") {
+                const parameters = {};
+
+                parameters.field = fieldStr;
+                parameters.kind = kind;
+
+                this._globalExportCallback(parameters);
+            }
         }
 
         for (let i = 0; i < newEntries.length; i++) {
