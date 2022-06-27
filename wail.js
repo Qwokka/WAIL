@@ -2140,6 +2140,9 @@ class WailParser extends BufferReader {
 
                 this._globalImportCallback(parameters);
             }
+
+            // Fix for https://github.com/Qwokka/WAIL/issues/3
+            reader.commitBytes();
         }
 
         let newCount = oldCount;
