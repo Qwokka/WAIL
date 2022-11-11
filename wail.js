@@ -1707,6 +1707,8 @@ class WailParser extends BufferReader {
 
                     this._parsedSections |= thisFlag;
 
+                    // FIXME This breaks if we need to add 2 missing sections consecutively
+                    // See https://www.y8.com/games/slope_football for a testcase
                     this.copyBuffer([id]);
                 }
             }
@@ -2248,7 +2250,7 @@ class WailParser extends BufferReader {
             reader.copyBuffer(type);
 
             if (optionsEntry.variable instanceof WailVariable) {
-                const functionIndex = newCount + this._importFuncCount;
+                const functionIndex = i + this._importFuncCount;
 
                 optionsEntry.variable.value = this._getAdjustedFunctionIndex(functionIndex);
             }
