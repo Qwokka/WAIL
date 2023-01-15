@@ -258,6 +258,7 @@ const OP_I64_EXTEND8_S       = 0xc2;
 const OP_I64_EXTEND16_S      = 0xc3;
 const OP_I64_EXTEND32_S      = 0xc4;
 const OP_BULK_MEMORY         = 0xfc;
+const OP_SIMD                = 0xfd;
 const OP_ATOMIC              = 0xfe;
 
 const ARG_MEMORY_INIT        = 0x08;
@@ -267,6 +268,243 @@ const ARG_MEMORY_FILL        = 0x0b;
 const ARG_TABLE_INIT         = 0x0c;
 const ARG_ELEM_DROP          = 0x0d;
 const ARG_TABLE_COPY         = 0x0e;
+
+const SIMD_V128_LOAD = 0x00;
+const SIMD_V128_LOAD8X8_S = 0x01;
+const SIMD_V128_LOAD8X8_U = 0x02;
+const SIMD_V128_LOAD16X4_S = 0x03;
+const SIMD_V128_LOAD16X4_U = 0x04;
+const SIMD_V128_LOAD32X2_S = 0x05;
+const SIMD_V128_LOAD32X2_U = 0x06;
+const SIMD_V128_LOAD8_SPLAT = 0x07;
+const SIMD_V128_LOAD16_SPLAT = 0x08;
+const SIMD_V128_LOAD32_SPLAT = 0x09;
+const SIMD_V128_LOAD64_SPLAT = 0x0a;
+const SIMD_V128_STORE = 0x0b;
+const SIMD_V128_CONST = 0x0c;
+const SIMD_I8X16_SHUFFLE = 0x0d;
+const SIMD_I8X16_SWIZZLE = 0x0e;
+const SIMD_I8X16_SPLAT = 0x0f;
+const SIMD_I16X8_SPLAT = 0x10;
+const SIMD_I32X4_SPLAT = 0x11;
+const SIMD_I64X2_SPLAT = 0x12;
+const SIMD_F32X4_SPLAT = 0x13;
+const SIMD_F64X2_SPLAT = 0x14;
+const SIMD_I8X16_EXTRACT_LANE_S = 0x15;
+const SIMD_I8X16_EXTRACT_LANE_U = 0x16;
+const SIMD_I8X16_REPLACE_LANE = 0x17;
+const SIMD_I16X8_EXTRACT_LANE_S = 0x18;
+const SIMD_I16X8_EXTRACT_LANE_U = 0x19;
+const SIMD_I16X8_REPLACE_LANE = 0x1a;
+const SIMD_I32X4_EXTRACT_LANE = 0x1b;
+const SIMD_I32X4_REPLACE_LANE = 0x1c;
+const SIMD_I64X2_EXTRACT_LANE = 0x1d;
+const SIMD_I64X2_REPLACE_LANE = 0x1e;
+const SIMD_F32X4_EXTRACT_LANE = 0x1f;
+const SIMD_F32X4_REPLACE_LANE = 0x20;
+const SIMD_F64X2_EXTRACT_LANE = 0x21;
+const SIMD_F64X2_REPLACE_LANE = 0x22;
+const SIMD_I8X16_EQ = 0x23;
+const SIMD_I8X16_NE = 0x24;
+const SIMD_I8X16_LT_S = 0x25;
+const SIMD_I8X16_LT_U = 0x26;
+const SIMD_I8X16_GT_S = 0x27;
+const SIMD_I8X16_GT_U = 0x28;
+const SIMD_I8X16_LE_S = 0x29;
+const SIMD_I8X16_LE_U = 0x2a;
+const SIMD_I8X16_GE_S = 0x2b;
+const SIMD_I8X16_GE_U = 0x2c;
+const SIMD_I16X8_EQ = 0x2d;
+const SIMD_I16X8_NE = 0x2e;
+const SIMD_I16X8_LT_S = 0x2f;
+const SIMD_I16X8_LT_U = 0x30;
+const SIMD_I16X8_GT_S = 0x31;
+const SIMD_I16X8_GT_U = 0x32;
+const SIMD_I16X8_LE_S = 0x33;
+const SIMD_I16X8_LE_U = 0x34;
+const SIMD_I16X8_GE_S = 0x35;
+const SIMD_I16X8_GE_U = 0x36;
+const SIMD_I32X4_EQ = 0x37;
+const SIMD_I32X4_NE = 0x38;
+const SIMD_I32X4_LT_S = 0x39;
+const SIMD_I32X4_LT_U = 0x3a;
+const SIMD_I32X4_GT_S = 0x3b;
+const SIMD_I32X4_GT_U = 0x3c;
+const SIMD_I32X4_LE_S = 0x3d;
+const SIMD_I32X4_LE_U = 0x3e;
+const SIMD_I32X4_GE_S = 0x3f;
+const SIMD_I32X4_GE_U = 0x40;
+const SIMD_F32X4_EQ = 0x41;
+const SIMD_F32X4_NE = 0x42;
+const SIMD_F32X4_LT = 0x43;
+const SIMD_F32X4_GT = 0x44;
+const SIMD_F32X4_LE = 0x45;
+const SIMD_F32X4_GE = 0x46;
+const SIMD_F64X2_EQ = 0x47;
+const SIMD_F64X2_NE = 0x48;
+const SIMD_F64X2_LT = 0x49;
+const SIMD_F64X2_GT = 0x4a;
+const SIMD_F64X2_LE = 0x4b;
+const SIMD_F64X2_GE = 0x4c;
+const SIMD_V128_NOT = 0x4d;
+const SIMD_V128_AND = 0x4e;
+const SIMD_V128_ANDNOT = 0x4f;
+const SIMD_V128_OR = 0x50;
+const SIMD_V128_XOR = 0x51;
+const SIMD_V128_BITSELECT = 0x52;
+const SIMD_I8X16_ABS = 0x60;
+const SIMD_I8X16_NEG = 0x61;
+const SIMD_I8X16_ALL_TRUE = 0x63;
+const SIMD_I8X16_BITMASK = 0x64;
+const SIMD_I8X16_NARROW_I16X8_S = 0x65;
+const SIMD_I8X16_NARROW_I16X8_U = 0x66;
+const SIMD_I8X16_SHL = 0x6b;
+const SIMD_I8X16_SHR_S = 0x6c;
+const SIMD_I8X16_SHR_U = 0x6d;
+const SIMD_I8X16_ADD = 0x6e;
+const SIMD_I8X16_ADD_SAT_S = 0x6f;
+const SIMD_I8X16_ADD_SAT_U = 0x70;
+const SIMD_I8X16_SUB = 0x71;
+const SIMD_I8X16_SUB_SAT_S = 0x72;
+const SIMD_I8X16_SUB_SAT_U = 0x73;
+const SIMD_I8X16_MIN_S = 0x76;
+const SIMD_I8X16_MIN_U = 0x77;
+const SIMD_I8X16_MAX_S = 0x78;
+const SIMD_I8X16_MAX_U = 0x79;
+const SIMD_I8X16_AVGR_U = 0x7b;
+const SIMD_I16X8_ABS = 0x80;
+const SIMD_I16X8_NEG = 0x81;
+const SIMD_I16X8_ALL_TRUE = 0x83;
+const SIMD_I16X8_BITMASK = 0x84;
+const SIMD_I16X8_NARROW_I32X4_S = 0x85;
+const SIMD_I16X8_NARROW_I32X4_U = 0x86;
+const SIMD_I16X8_EXTEND_LOW_I8X16_S = 0x87;
+const SIMD_I16X8_EXTEND_HIGH_I8X16_S = 0x88;
+const SIMD_I16X8_EXTEND_LOW_I8X16_U = 0x89;
+const SIMD_I16X8_EXTEND_HIGH_I8X16_U = 0x8a;
+const SIMD_I16X8_SHL = 0x8b;
+const SIMD_I16X8_SHR_S = 0x8c;
+const SIMD_I16X8_SHR_U = 0x8d;
+const SIMD_I16X8_ADD = 0x8e;
+const SIMD_I16X8_ADD_SAT_S = 0x8f;
+const SIMD_I16X8_ADD_SAT_U = 0x90;
+const SIMD_I16X8_SUB = 0x91;
+const SIMD_I16X8_SUB_SAT_S = 0x92;
+const SIMD_I16X8_SUB_SAT_U = 0x93;
+const SIMD_I16X8_MUL = 0x95;
+const SIMD_I16X8_MIN_S = 0x96;
+const SIMD_I16X8_MIN_U = 0x97;
+const SIMD_I16X8_MAX_S = 0x98;
+const SIMD_I16X8_MAX_U = 0x99;
+const SIMD_I16X8_AVGR_U = 0x9b;
+const SIMD_I32X4_ABS = 0xa0;
+const SIMD_I32X4_NEG = 0xa1;
+const SIMD_I32X4_ALL_TRUE = 0xa3;
+const SIMD_I32X4_BITMASK = 0xa4;
+const SIMD_I32X4_EXTEND_LOW_I16X8_S = 0xa7;
+const SIMD_I32X4_EXTEND_HIGH_I16X8_S = 0xa8;
+const SIMD_I32X4_EXTEND_LOW_I16X8_U = 0xa9;
+const SIMD_I32X4_EXTEND_HIGH_I16X8_U = 0xaa;
+const SIMD_I32X4_SHL = 0xab;
+const SIMD_I32X4_SHR_S = 0xac;
+const SIMD_I32X4_SHR_U = 0xad;
+const SIMD_I32X4_ADD = 0xae;
+const SIMD_I32X4_SUB = 0xb1;
+const SIMD_I32X4_MUL = 0xb5;
+const SIMD_I32X4_MIN_S = 0xb6;
+const SIMD_I32X4_MIN_U = 0xb7;
+const SIMD_I32X4_MAX_S = 0xb8;
+const SIMD_I32X4_MAX_U = 0xb9;
+const SIMD_I32X4_DOT_I16X8_S = 0xba;
+const SIMD_I64X2_ABS = 0xc0;
+const SIMD_I64X2_NEG = 0xc1;
+const SIMD_I64X2_BITMASK = 0xc4;
+const SIMD_I64X2_EXTEND_LOW_I32X4_S = 0xc7;
+const SIMD_I64X2_EXTEND_HIGH_I32X4_S = 0xc8;
+const SIMD_I64X2_EXTEND_LOW_I32X4_U = 0xc9;
+const SIMD_I64X2_EXTEND_HIGH_I32X4_U = 0xca;
+const SIMD_I64X2_SHL = 0xcb;
+const SIMD_I64X2_SHR_S = 0xcc;
+const SIMD_I64X2_SHR_U = 0xcd;
+const SIMD_I64X2_ADD = 0xce;
+const SIMD_I64X2_SUB = 0xd1;
+const SIMD_I64X2_MUL = 0xd5;
+const SIMD_F32X4_CEIL = 0x67;
+const SIMD_F32X4_FLOOR = 0x68;
+const SIMD_F32X4_TRUNC = 0x69;
+const SIMD_F32X4_NEAREST = 0x6a;
+const SIMD_F64X2_CEIL = 0x74;
+const SIMD_F64X2_FLOOR = 0x75;
+const SIMD_F64X2_TRUNC = 0x7a;
+const SIMD_F64X2_NEAREST = 0x94;
+const SIMD_F32X4_ABS = 0xe0;
+const SIMD_F32X4_NEG = 0xe1;
+const SIMD_F32X4_SQRT = 0xe3;
+const SIMD_F32X4_ADD = 0xe4;
+const SIMD_F32X4_SUB = 0xe5;
+const SIMD_F32X4_MUL = 0xe6;
+const SIMD_F32X4_DIV = 0xe7;
+const SIMD_F32X4_MIN = 0xe8;
+const SIMD_F32X4_MAX = 0xe9;
+const SIMD_F32X4_PMIN = 0xea;
+const SIMD_F32X4_PMAX = 0xeb;
+const SIMD_F64X2_ABS = 0xec;
+const SIMD_F64X2_NEG = 0xed;
+const SIMD_F64X2_SQRT = 0xef;
+const SIMD_F64X2_ADD = 0xf0;
+const SIMD_F64X2_SUB = 0xf1;
+const SIMD_F64X2_MUL = 0xf2;
+const SIMD_F64X2_DIV = 0xf3;
+const SIMD_F64X2_MIN = 0xf4;
+const SIMD_F64X2_MAX = 0xf5;
+const SIMD_F64X2_PMIN = 0xf6;
+const SIMD_F64X2_PMAX = 0xf7;
+const SIMD_I32X4_TRUNC_SAT_F32X4_S = 0xf8;
+const SIMD_I32X4_TRUNC_SAT_F32X4_U = 0xf9;
+const SIMD_F32X4_CONVERT_I32X4_S = 0xfa;
+const SIMD_F32X4_CONVERT_I32X4_U = 0xfb;
+const SIMD_V128_LOAD32_ZERO = 0x5c;
+const SIMD_V128_LOAD64_ZERO = 0x5d;
+const SIMD_I16X8_EXTMUL_LOW_I8X16_S = 0x9c;
+const SIMD_I16X8_EXTMUL_HIGH_I8X16_S = 0x9d;
+const SIMD_I16X8_EXTMUL_LOW_I8X16_U = 0x9e;
+const SIMD_I16X8_EXTMUL_HIGH_I8X16_U = 0x9f;
+const SIMD_I32X4_EXTMUL_LOW_I16X8_S = 0xbc;
+const SIMD_I32X4_EXTMUL_HIGH_I16X8_S = 0xbd;
+const SIMD_I32X4_EXTMUL_LOW_I16X8_U = 0xbe;
+const SIMD_I32X4_EXTMUL_HIGH_I16X8_U = 0xbf;
+const SIMD_I64X2_EXTMUL_LOW_I32X4_S = 0xdc;
+const SIMD_I64X2_EXTMUL_HIGH_I32X4_S = 0xdd;
+const SIMD_I64X2_EXTMUL_LOW_I32X4_U = 0xde;
+const SIMD_I64X2_EXTMUL_HIGH_I32X4_U = 0xdf;
+const SIMD_I16X8_Q15MULR_SAT_S = 0x82;
+const SIMD_V128_ANY_TRUE = 0x53;
+const SIMD_V128_LOAD8_LANE = 0x54;
+const SIMD_V128_LOAD16_LANE = 0x55;
+const SIMD_V128_LOAD32_LANE = 0x56;
+const SIMD_V128_LOAD64_LANE = 0x57;
+const SIMD_V128_STORE8_LANE = 0x58;
+const SIMD_V128_STORE16_LANE = 0x59;
+const SIMD_V128_STORE32_LANE = 0x5a;
+const SIMD_V128_STORE64_LANE = 0x5b;
+const SIMD_I64X2_EQ = 0xd6;
+const SIMD_I64X2_NE = 0xd7;
+const SIMD_I64X2_LT_S = 0xd8;
+const SIMD_I64X2_GT_S = 0xd9;
+const SIMD_I64X2_LE_S = 0xda;
+const SIMD_I64X2_GE_S = 0xdb;
+const SIMD_I64X2_ALL_TRUE = 0xc3;
+const SIMD_F64X2_CONVERT_LOW_I32X4_S = 0xfe;
+const SIMD_F64X2_CONVERT_LOW_I32X4_U = 0xff;
+const SIMD_I32X4_TRUNC_SAT_F64X2_S_ZERO = 0xfc;
+const SIMD_I32X4_TRUNC_SAT_F64X2_U_ZERO = 0xfd;
+const SIMD_F32X4_DEMOTE_F64X2_ZERO = 0x5e;
+const SIMD_F64X2_PROMOTE_LOW_F32X4 = 0x5f;
+const SIMD_I8X16_POPCNT = 0x62;
+const SIMD_I16X8_EXTADD_PAIRWISE_I8X16_S = 0x7c;
+const SIMD_I16X8_EXTADD_PAIRWISE_I8X16_U = 0x7d;
+const SIMD_I32X4_EXTADD_PAIRWISE_I16X8_S = 0x7e;
+const SIMD_I32X4_EXTADD_PAIRWISE_I16X8_U = 0x7f;
 
 const ARG_ATOMIC_WAKE             = 0x00;
 const ARG_I32_ATOMIC_WAIT         = 0x01;
@@ -653,6 +891,43 @@ const BufferReader = class {
                 (b6 << 40)  |
                 (b7 << 48)  |
                 (b8 << 56)
+        );
+    }
+
+    readUint128() {
+        const b1 = this.inBuffer[this.inPos++];
+        const b2 = this.inBuffer[this.inPos++];
+        const b3 = this.inBuffer[this.inPos++];
+        const b4 = this.inBuffer[this.inPos++];
+        const b5 = this.inBuffer[this.inPos++];
+        const b6 = this.inBuffer[this.inPos++];
+        const b7 = this.inBuffer[this.inPos++];
+        const b8 = this.inBuffer[this.inPos++];
+        const b9 = this.inBuffer[this.inPos++];
+        const b10 = this.inBuffer[this.inPos++];
+        const b11 = this.inBuffer[this.inPos++];
+        const b12 = this.inBuffer[this.inPos++];
+        const b13 = this.inBuffer[this.inPos++];
+        const b14 = this.inBuffer[this.inPos++];
+        const b15 = this.inBuffer[this.inPos++];
+        const b16 = this.inBuffer[this.inPos++];
+
+        return (b1           |
+                (b2 << 8)    |
+                (b3 << 16)   |
+                (b4 << 24)   |
+                (b5 << 32)   |
+                (b6 << 40)   |
+                (b7 << 48)   |
+                (b8 << 56)   |
+                (b9 << 64)   |
+                (b10 << 72)  |
+                (b11 << 80)  |
+                (b12 << 88)  |
+                (b13 << 96)  |
+                (b14 << 104) |
+                (b15 << 112) |
+                (b16 << 120)
         );
     }
 
@@ -3378,6 +3653,262 @@ class WailParser extends BufferReader {
                         break;
                     default:
                         throw new Error("Unknown argument '" + arg + "' for OP_BULK_MEMORY");
+                }
+                break;
+            case OP_SIMD:
+                arg = reader.readUint8();
+
+                switch (arg) {
+                    case SIMD_I8X16_SWIZZLE:
+                    case SIMD_I8X16_SPLAT:
+                    case SIMD_I16X8_SPLAT:
+                    case SIMD_I32X4_SPLAT:
+                    case SIMD_I64X2_SPLAT:
+                    case SIMD_F32X4_SPLAT:
+                    case SIMD_F64X2_SPLAT:
+                    case SIMD_I8X16_EQ:
+                    case SIMD_I8X16_NE:
+                    case SIMD_I8X16_LT_S:
+                    case SIMD_I8X16_LT_U:
+                    case SIMD_I8X16_GT_S:
+                    case SIMD_I8X16_GT_U:
+                    case SIMD_I8X16_LE_S:
+                    case SIMD_I8X16_LE_U:
+                    case SIMD_I8X16_GE_S:
+                    case SIMD_I8X16_GE_U:
+                    case SIMD_I16X8_EQ:
+                    case SIMD_I16X8_NE:
+                    case SIMD_I16X8_LT_S:
+                    case SIMD_I16X8_LT_U:
+                    case SIMD_I16X8_GT_S:
+                    case SIMD_I16X8_GT_U:
+                    case SIMD_I16X8_LE_S:
+                    case SIMD_I16X8_LE_U:
+                    case SIMD_I16X8_GE_S:
+                    case SIMD_I16X8_GE_U:
+                    case SIMD_I32X4_EQ:
+                    case SIMD_I32X4_NE:
+                    case SIMD_I32X4_LT_S:
+                    case SIMD_I32X4_LT_U:
+                    case SIMD_I32X4_GT_S:
+                    case SIMD_I32X4_GT_U:
+                    case SIMD_I32X4_LE_S:
+                    case SIMD_I32X4_LE_U:
+                    case SIMD_I32X4_GE_S:
+                    case SIMD_I32X4_GE_U:
+                    case SIMD_F32X4_EQ:
+                    case SIMD_F32X4_NE:
+                    case SIMD_F32X4_LT:
+                    case SIMD_F32X4_GT:
+                    case SIMD_F32X4_LE:
+                    case SIMD_F32X4_GE:
+                    case SIMD_F64X2_EQ:
+                    case SIMD_F64X2_NE:
+                    case SIMD_F64X2_LT:
+                    case SIMD_F64X2_GT:
+                    case SIMD_F64X2_LE:
+                    case SIMD_F64X2_GE:
+                    case SIMD_V128_NOT:
+                    case SIMD_V128_AND:
+                    case SIMD_V128_ANDNOT:
+                    case SIMD_V128_OR:
+                    case SIMD_V128_XOR:
+                    case SIMD_V128_BITSELECT:
+                    case SIMD_I8X16_ABS:
+                    case SIMD_I8X16_NEG:
+                    case SIMD_I8X16_ALL_TRUE:
+                    case SIMD_I8X16_BITMASK:
+                    case SIMD_I8X16_NARROW_I16X8_S:
+                    case SIMD_I8X16_NARROW_I16X8_U:
+                    case SIMD_I8X16_SHL:
+                    case SIMD_I8X16_SHR_S:
+                    case SIMD_I8X16_SHR_U:
+                    case SIMD_I8X16_ADD:
+                    case SIMD_I8X16_ADD_SAT_S:
+                    case SIMD_I8X16_ADD_SAT_U:
+                    case SIMD_I8X16_SUB:
+                    case SIMD_I8X16_SUB_SAT_S:
+                    case SIMD_I8X16_SUB_SAT_U:
+                    case SIMD_I8X16_MIN_S:
+                    case SIMD_I8X16_MIN_U:
+                    case SIMD_I8X16_MAX_S:
+                    case SIMD_I8X16_MAX_U:
+                    case SIMD_I8X16_AVGR_U:
+                    case SIMD_I16X8_ABS:
+                    case SIMD_I16X8_NEG:
+                    case SIMD_I16X8_ALL_TRUE:
+                    case SIMD_I16X8_BITMASK:
+                    case SIMD_I16X8_NARROW_I32X4_S:
+                    case SIMD_I16X8_NARROW_I32X4_U:
+                    case SIMD_I16X8_EXTEND_LOW_I8X16_S:
+                    case SIMD_I16X8_EXTEND_HIGH_I8X16_S:
+                    case SIMD_I16X8_EXTEND_LOW_I8X16_U:
+                    case SIMD_I16X8_EXTEND_HIGH_I8X16_U:
+                    case SIMD_I16X8_SHL:
+                    case SIMD_I16X8_SHR_S:
+                    case SIMD_I16X8_SHR_U:
+                    case SIMD_I16X8_ADD:
+                    case SIMD_I16X8_ADD_SAT_S:
+                    case SIMD_I16X8_ADD_SAT_U:
+                    case SIMD_I16X8_SUB:
+                    case SIMD_I16X8_SUB_SAT_S:
+                    case SIMD_I16X8_SUB_SAT_U:
+                    case SIMD_I16X8_MUL:
+                    case SIMD_I16X8_MIN_S:
+                    case SIMD_I16X8_MIN_U:
+                    case SIMD_I16X8_MAX_S:
+                    case SIMD_I16X8_MAX_U:
+                    case SIMD_I16X8_AVGR_U:
+                    case SIMD_I32X4_ABS:
+                    case SIMD_I32X4_NEG:
+                    case SIMD_I32X4_ALL_TRUE:
+                    case SIMD_I32X4_BITMASK:
+                    case SIMD_I32X4_EXTEND_LOW_I16X8_S:
+                    case SIMD_I32X4_EXTEND_HIGH_I16X8_S:
+                    case SIMD_I32X4_EXTEND_LOW_I16X8_U:
+                    case SIMD_I32X4_EXTEND_HIGH_I16X8_U:
+                    case SIMD_I32X4_SHL:
+                    case SIMD_I32X4_SHR_S:
+                    case SIMD_I32X4_SHR_U:
+                    case SIMD_I32X4_ADD:
+                    case SIMD_I32X4_SUB:
+                    case SIMD_I32X4_MUL:
+                    case SIMD_I32X4_MIN_S:
+                    case SIMD_I32X4_MIN_U:
+                    case SIMD_I32X4_MAX_S:
+                    case SIMD_I32X4_MAX_U:
+                    case SIMD_I32X4_DOT_I16X8_S:
+                    case SIMD_I64X2_ABS:
+                    case SIMD_I64X2_NEG:
+                    case SIMD_I64X2_BITMASK:
+                    case SIMD_I64X2_EXTEND_LOW_I32X4_S:
+                    case SIMD_I64X2_EXTEND_HIGH_I32X4_S:
+                    case SIMD_I64X2_EXTEND_LOW_I32X4_U:
+                    case SIMD_I64X2_EXTEND_HIGH_I32X4_U:
+                    case SIMD_I64X2_SHL:
+                    case SIMD_I64X2_SHR_S:
+                    case SIMD_I64X2_SHR_U:
+                    case SIMD_I64X2_ADD:
+                    case SIMD_I64X2_SUB:
+                    case SIMD_I64X2_MUL:
+                    case SIMD_F32X4_CEIL:
+                    case SIMD_F32X4_FLOOR:
+                    case SIMD_F32X4_TRUNC:
+                    case SIMD_F32X4_NEAREST:
+                    case SIMD_F64X2_CEIL:
+                    case SIMD_F64X2_FLOOR:
+                    case SIMD_F64X2_TRUNC:
+                    case SIMD_F64X2_NEAREST:
+                    case SIMD_F32X4_ABS:
+                    case SIMD_F32X4_NEG:
+                    case SIMD_F32X4_SQRT:
+                    case SIMD_F32X4_ADD:
+                    case SIMD_F32X4_SUB:
+                    case SIMD_F32X4_MUL:
+                    case SIMD_F32X4_DIV:
+                    case SIMD_F32X4_MIN:
+                    case SIMD_F32X4_MAX:
+                    case SIMD_F32X4_PMIN:
+                    case SIMD_F32X4_PMAX:
+                    case SIMD_F64X2_ABS:
+                    case SIMD_F64X2_NEG:
+                    case SIMD_F64X2_SQRT:
+                    case SIMD_F64X2_ADD:
+                    case SIMD_F64X2_SUB:
+                    case SIMD_F64X2_MUL:
+                    case SIMD_F64X2_DIV:
+                    case SIMD_F64X2_MIN:
+                    case SIMD_F64X2_MAX:
+                    case SIMD_F64X2_PMIN:
+                    case SIMD_F64X2_PMAX:
+                    case SIMD_I32X4_TRUNC_SAT_F32X4_S:
+                    case SIMD_I32X4_TRUNC_SAT_F32X4_U:
+                    case SIMD_F32X4_CONVERT_I32X4_S:
+                    case SIMD_F32X4_CONVERT_I32X4_U:
+                    case SIMD_I16X8_EXTMUL_LOW_I8X16_S:
+                    case SIMD_I16X8_EXTMUL_HIGH_I8X16_S:
+                    case SIMD_I16X8_EXTMUL_LOW_I8X16_U:
+                    case SIMD_I16X8_EXTMUL_HIGH_I8X16_U:
+                    case SIMD_I32X4_EXTMUL_LOW_I16X8_S:
+                    case SIMD_I32X4_EXTMUL_HIGH_I16X8_S:
+                    case SIMD_I32X4_EXTMUL_LOW_I16X8_U:
+                    case SIMD_I32X4_EXTMUL_HIGH_I16X8_U:
+                    case SIMD_I64X2_EXTMUL_LOW_I32X4_S:
+                    case SIMD_I64X2_EXTMUL_HIGH_I32X4_S:
+                    case SIMD_I64X2_EXTMUL_LOW_I32X4_U:
+                    case SIMD_I64X2_EXTMUL_HIGH_I32X4_U:
+                    case SIMD_I16X8_Q15MULR_SAT_S:
+                    case SIMD_V128_ANY_TRUE:
+                    case SIMD_I64X2_EQ:
+                    case SIMD_I64X2_NE:
+                    case SIMD_I64X2_LT_S:
+                    case SIMD_I64X2_GT_S:
+                    case SIMD_I64X2_LE_S:
+                    case SIMD_I64X2_GE_S:
+                    case SIMD_I64X2_ALL_TRUE:
+                    case SIMD_F64X2_CONVERT_LOW_I32X4_S:
+                    case SIMD_F64X2_CONVERT_LOW_I32X4_U:
+                    case SIMD_I32X4_TRUNC_SAT_F64X2_S_ZERO:
+                    case SIMD_I32X4_TRUNC_SAT_F64X2_U_ZERO:
+                    case SIMD_F32X4_DEMOTE_F64X2_ZERO:
+                    case SIMD_F64X2_PROMOTE_LOW_F32X4:
+                    case SIMD_I8X16_POPCNT:
+                    case SIMD_I16X8_EXTADD_PAIRWISE_I8X16_S:
+                    case SIMD_I16X8_EXTADD_PAIRWISE_I8X16_U:
+                    case SIMD_I32X4_EXTADD_PAIRWISE_I16X8_S:
+                    case SIMD_I32X4_EXTADD_PAIRWISE_I16X8_U:
+                        break;
+                    case SIMD_V128_LOAD:
+                    case SIMD_V128_LOAD8X8_S:
+                    case SIMD_V128_LOAD8X8_U:
+                    case SIMD_V128_LOAD16X4_S:
+                    case SIMD_V128_LOAD16X4_U:
+                    case SIMD_V128_LOAD32X2_S:
+                    case SIMD_V128_LOAD32X2_U:
+                    case SIMD_V128_LOAD8_SPLAT:
+                    case SIMD_V128_LOAD16_SPLAT:
+                    case SIMD_V128_LOAD32_SPLAT:
+                    case SIMD_V128_LOAD64_SPLAT:
+                    case SIMD_V128_STORE:
+                    case SIMD_V128_LOAD32_ZERO:
+                    case SIMD_V128_LOAD64_ZERO:
+                        reader.readVarUint32();
+                        reader.readVarUint32();
+                        break;
+                    case SIMD_I8X16_SHUFFLE:
+                    case SIMD_V128_CONST:
+                        reader.readUint128();
+                        break;
+                    case SIMD_I8X16_EXTRACT_LANE_S:
+                    case SIMD_I8X16_EXTRACT_LANE_U:
+                    case SIMD_I8X16_REPLACE_LANE:
+                    case SIMD_I16X8_EXTRACT_LANE_S:
+                    case SIMD_I16X8_EXTRACT_LANE_U:
+                    case SIMD_I16X8_REPLACE_LANE:
+                    case SIMD_I32X4_EXTRACT_LANE:
+                    case SIMD_I32X4_REPLACE_LANE:
+                    case SIMD_I64X2_EXTRACT_LANE:
+                    case SIMD_I64X2_REPLACE_LANE:
+                    case SIMD_F32X4_EXTRACT_LANE:
+                    case SIMD_F32X4_REPLACE_LANE:
+                    case SIMD_F64X2_EXTRACT_LANE:
+                    case SIMD_F64X2_REPLACE_LANE:
+                        reader.readUint8();
+                        break;
+                    case SIMD_V128_LOAD8_LANE:
+                    case SIMD_V128_LOAD16_LANE:
+                    case SIMD_V128_LOAD32_LANE:
+                    case SIMD_V128_LOAD64_LANE:
+                    case SIMD_V128_STORE8_LANE:
+                    case SIMD_V128_STORE16_LANE:
+                    case SIMD_V128_STORE32_LANE:
+                    case SIMD_V128_STORE64_LANE:
+                        reader.readVarUint32();
+                        reader.readVarUint32();
+                        reader.readUint8();
+                        break;
+                    default:
+                        throw new Error("Unknown argument '" + arg + "' for OP_SIMD");
                 }
                 break;
             case OP_ATOMIC:
