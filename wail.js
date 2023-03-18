@@ -1382,7 +1382,7 @@ class WailParser extends BufferReader {
                 return oldIndex;
             }
             else {
-                const newVariable = this._createVariable;
+                const newVariable = this._createVariable();
 
                 newVariable.value = this._getAdjustedFunctionIndex(oldIndex);
 
