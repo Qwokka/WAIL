@@ -1324,6 +1324,8 @@ class WailParser extends BufferReader {
 
             this._importCallbacks.push(callbackObj);
         }
+
+        this._optionalSectionFlags |= 1 << SECTION_IMPORT;
     }
 
     addFunctionEntry(options) {
@@ -1614,6 +1616,8 @@ class WailParser extends BufferReader {
 
             this._exportCallbacks.push(callbackObj);
         }
+
+        this._optionalSectionFlags |= 1 << SECTION_EXPORT;
     }
 
     // There is no addStartEntry since the start section can only have one element
