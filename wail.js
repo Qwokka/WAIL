@@ -832,11 +832,7 @@ const BufferReader = class {
     }
 
     resize() {
-        if (this.outBuffer.length == 0) {
-            throw new Error("Attempted to resize 0-length buffer");
-        }
-
-        const newBuffer = new Uint8Array(Math.ceil(this.outBuffer.length * 1.25));
+        const newBuffer = new Uint8Array(Math.ceil(8 + this.outBuffer.length * 1.25));
 
         for (let i = 0; i < this.outPos; i++) {
             newBuffer[i] = this.outBuffer[i];
