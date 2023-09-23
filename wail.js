@@ -3547,6 +3547,8 @@ class WailParser extends BufferReader {
             case OP_BLOCK:
             case OP_LOOP:
             case OP_IF:
+                reader.readVarUint32();
+                break;
             case OP_MEMORY_SIZE:
             case OP_MEMORY_GROW:
                 reader.readUint8();
