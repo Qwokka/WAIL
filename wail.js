@@ -56,6 +56,7 @@ const VALUE_TYPE_I32         = 0x7f;
 const VALUE_TYPE_I64         = 0x7e;
 const VALUE_TYPE_F32         = 0x7d;
 const VALUE_TYPE_F64         = 0x7c;
+const VALUE_TYPE_V128        = 0x7b;
 const VALUE_TYPE_ANYFUNC     = 0x70;
 const VALUE_TYPE_FUNC        = 0x60;
 const VALUE_TYPE_BLOCK       = 0x40;
@@ -65,6 +66,7 @@ const valueTypeStr = {
     "i64": VALUE_TYPE_I64,
     "f32": VALUE_TYPE_F32,
     "f64": VALUE_TYPE_F64,
+    "v128": VALUE_TYPE_V128,
     "anyfunc": VALUE_TYPE_ANYFUNC,
     "func": VALUE_TYPE_FUNC,
     "block": VALUE_TYPE_BLOCK
@@ -80,12 +82,22 @@ const convertValueType = function(string) {
     return typeVal;
 };
 
+const ELEM_SEG_FLAG_NONE           = 0x00;
+const ELEM_SEG_FLAG_PASSIVE        = 0x01;
+const ELEM_SEG_FLAG_EXPLICIT_INDEX = 0x02;
+const ELEM_SEG_FLAG_DECLARED       = 0x03;
+const ELEM_SEG_FLAG_USE_ELEM_EXPRS = 0x04;
+
 const OP_UNREACHABLE         = 0x00;
 const OP_NOP                 = 0x01;
 const OP_BLOCK               = 0x02;
 const OP_LOOP                = 0x03;
 const OP_IF                  = 0x04;
 const OP_ELSE                = 0x05;
+const OP_TRY                 = 0x06;
+const OP_CATCH               = 0x07;
+const OP_THROW               = 0x08;
+const OP_RETHROW             = 0x09;
 const OP_END                 = 0x0b;
 const OP_BR                  = 0x0c;
 const OP_BR_IF               = 0x0d;
@@ -100,6 +112,8 @@ const OP_SET_LOCAL           = 0x21;
 const OP_TEE_LOCAL           = 0x22;
 const OP_GET_GLOBAL          = 0x23;
 const OP_SET_GLOBAL          = 0x24;
+const OP_TABLE_GET           = 0x25;
+const OP_TABLE_SET           = 0x26;
 const OP_I32_LOAD            = 0x28;
 const OP_I64_LOAD            = 0x29;
 const OP_F32_LOAD            = 0x2a;
@@ -257,17 +271,33 @@ const OP_I32_EXTEND16_S      = 0xc1;
 const OP_I64_EXTEND8_S       = 0xc2;
 const OP_I64_EXTEND16_S      = 0xc3;
 const OP_I64_EXTEND32_S      = 0xc4;
-const OP_BULK_MEMORY         = 0xfc;
+const OP_REF_NULL            = 0xd0;
+const OP_REF_IS_NULL         = 0xd1;
+const OP_REF_FUNC            = 0xd2;
+const OP_REF_AS_NON_NULL     = 0xd3;
+const OP_BR_ON_NULL          = 0xd4;
+const OP_REF_EQ              = 0xd5;
+const OP_BR_ON_NON_NULL      = 0xd6;
+const OP_MISC                = 0xfc;
 const OP_SIMD                = 0xfd;
 const OP_ATOMIC              = 0xfe;
 
-const ARG_MEMORY_INIT        = 0x08;
-const ARG_DATA_DROP          = 0x09;
-const ARG_MEMORY_COPY        = 0x0a;
-const ARG_MEMORY_FILL        = 0x0b;
-const ARG_TABLE_INIT         = 0x0c;
-const ARG_ELEM_DROP          = 0x0d;
-const ARG_TABLE_COPY         = 0x0e;
+const ARG_I32_TRUNC_SAT_F32_S = 0x00;
+const ARG_I32_TRUNC_SAT_F32_U = 0x01;
+const ARG_I32_TRUNC_SAT_F64_S = 0x02;
+const ARG_I32_TRUNC_SAT_F64_U = 0x03;
+const ARG_I64_TRUNC_SAT_F32_S = 0x04;
+const ARG_I64_TRUNC_SAT_F32_U = 0x05;
+const ARG_I64_TRUNC_SAT_F64_S = 0x06;
+const ARG_I64_TRUNC_SAT_F64_U = 0x07;
+const ARG_MEMORY_INIT         = 0x08;
+const ARG_DATA_DROP           = 0x09;
+const ARG_MEMORY_COPY         = 0x0a;
+const ARG_MEMORY_FILL         = 0x0b;
+const ARG_TABLE_INIT          = 0x0c;
+const ARG_ELEM_DROP           = 0x0d;
+const ARG_TABLE_COPY          = 0x0e;
+const ARG_TABLE_GROW          = 0x0f;
 
 const SIMD_V128_LOAD = 0x00;
 const SIMD_V128_LOAD8X8_S = 0x01;
@@ -2978,16 +3008,28 @@ class WailParser extends BufferReader {
         const existingEntries = this._sectionOptions[SECTION_ELEMENT].existingEntries;
 
         for (let elemIndex = 0; elemIndex < oldCount; elemIndex++) {
-            let memIndex = reader.readVarUint32();
+            const segmentFlags = reader.readVarUint32();
 
-            let current;
+            if ((segmentFlags & (ELEM_SEG_FLAG_PASSIVE | ELEM_SEG_FLAG_EXPLICIT_INDEX)) == ELEM_SEG_FLAG_EXPLICIT_INDEX) {
+                reader.readVarUint32();
+            }
 
-            // At time of writing, init expressions can only be simple expressions.
-            // Therefore, it is safe to just parse until we find OP_END. However,
-            // this may become unreliable in the future
-            do {
-                current = this._readInstruction(reader);
-            } while (current[0] != OP_END);
+            if ((segmentFlags & ELEM_SEG_FLAG_PASSIVE) == 0) {
+                let current;
+
+                do {
+                    current = this._readInstruction(reader);
+                } while (current[0] != OP_END);
+            }
+
+            if (segmentFlags & (ELEM_SEG_FLAG_PASSIVE | ELEM_SEG_FLAG_EXPLICIT_INDEX)) {
+                if (segmentFlags & ELEM_SEG_FLAG_USE_ELEM_EXPRS) {
+                    const elemType = reader.readVarUint32();
+                }
+                else {
+                    reader.readUint8();
+                }
+            }
 
             reader.commitBytes();
 
@@ -2995,35 +3037,50 @@ class WailParser extends BufferReader {
 
             let elements = [];
 
-            for (let i = 0; i < numElements; i++) {
-                const oldIndex = reader.readVarUint32();
+            if (segmentFlags & ELEM_SEG_FLAG_USE_ELEM_EXPRS) {
+                for (let i = 0; i < numElements; i++) {
+                    let current;
 
-                const newIndex = this._getAdjustedFunctionIndex(oldIndex);
+                    do {
+                        current = this._readInstruction(reader);
+                    } while (current[0] != OP_END);
 
-                elements.push(newIndex);
-            }
-
-            for (let i = 0; i < existingEntries.length; i++) {
-                const thisEntry = existingEntries[i];
-
-                const thisIndex = thisEntry.index;
-
-                if (elemIndex == thisIndex) {
-                    // TODO Support WailVariables
-                    if (typeof thisEntry.elems !== "undefined") {
-                        elements = thisEntry.elems;
-                        numElements = elements.length;
-                    }
+                    reader.commitBytes();
                 }
             }
+            else {
+                for (let i = 0; i < numElements; i++) {
+                    const oldIndex = reader.readVarUint32();
 
-            reader.copyBuffer(VarUint32ToArray(numElements));
+                    const newIndex = this._getAdjustedFunctionIndex(oldIndex);
 
-            for (let i = 0; i < numElements; i++) {
-                reader.copyBuffer(VarUint32ToArray(elements[i]));
+                    elements.push(newIndex);
+                }
+
+                // TODO Support modifying when ELEM_SEG_FLAG_USE_ELEM_EXPRS is set
+                for (let i = 0; i < existingEntries.length; i++) {
+                    const thisEntry = existingEntries[i];
+
+                    const thisIndex = thisEntry.index;
+
+                    if (elemIndex == thisIndex) {
+                        // TODO Support WailVariables
+                        if (typeof thisEntry.elems !== "undefined") {
+                            elements = thisEntry.elems;
+                            numElements = elements.length;
+                        }
+                    }
+                }
+
+                reader.copyBuffer(VarUint32ToArray(numElements));
+
+                for (let i = 0; i < numElements; i++) {
+                    reader.copyBuffer(VarUint32ToArray(elements[i]));
+                }
             }
         }
 
+        // TODO Support adding when ELEM_SEG_FLAG_USE_ELEM_EXPRS is set
         let newCount = oldCount;
 
         for (let i = 0; i < newEntries.length; i++, newCount++) {
@@ -3543,10 +3600,16 @@ class WailParser extends BufferReader {
             case OP_I64_REINTERPRET_F64:
             case OP_F32_REINTERPRET_I32:
             case OP_F64_REINTERPRET_I64:
+            case OP_REF_NULL:
+            case OP_REF_IS_NULL:
                 break;
             case OP_BLOCK:
             case OP_LOOP:
             case OP_IF:
+            case OP_TRY:
+            case OP_CATCH:
+            case OP_THROW:
+            case OP_RETHROW:
                 reader.readVarUint32();
                 break;
             case OP_MEMORY_SIZE:
@@ -3571,6 +3634,10 @@ class WailParser extends BufferReader {
                 newTarget = this._getAdjustedGlobalIndex(oldTarget);
 
                 reader.copyBuffer(VarUint32ToArray(newTarget));
+                break;
+            case OP_TABLE_GET:
+            case OP_TABLE_SET:
+                reader.readUint8();
                 break;
             case OP_F32_CONST:
                 reader.readBytes(4);
@@ -3614,6 +3681,7 @@ class WailParser extends BufferReader {
                 reader.readVarUint32();
                 break;
             case OP_CALL:
+            case OP_REF_FUNC:
                 reader.commitBytes();
 
                 oldTarget = reader.readVarUint32();
@@ -3632,10 +3700,19 @@ class WailParser extends BufferReader {
             case OP_I64_EXTEND16_S:
             case OP_I64_EXTEND32_S:
                 break;
-            case OP_BULK_MEMORY:
+            case OP_MISC:
                 arg = reader.readUint8();
 
                 switch (arg) {
+                    case ARG_I32_TRUNC_SAT_F32_S:
+                    case ARG_I32_TRUNC_SAT_F32_U:
+                    case ARG_I32_TRUNC_SAT_F64_S:
+                    case ARG_I32_TRUNC_SAT_F64_U:
+                    case ARG_I64_TRUNC_SAT_F32_S:
+                    case ARG_I64_TRUNC_SAT_F32_U:
+                    case ARG_I64_TRUNC_SAT_F64_S:
+                    case ARG_I64_TRUNC_SAT_F64_U:
+                        break;
                     case ARG_MEMORY_INIT:
                     case ARG_TABLE_INIT:
                         reader.readVarUint32();
@@ -3651,10 +3728,11 @@ class WailParser extends BufferReader {
                         reader.readUint8();
                         break;
                     case ARG_MEMORY_FILL:
+                    case ARG_TABLE_GROW:
                         reader.readUint8();
                         break;
                     default:
-                        throw new Error("Unknown argument '" + arg + "' for OP_BULK_MEMORY");
+                        throw new Error("Unknown argument '" + arg + "' for OP_MISC");
                 }
                 break;
             case OP_SIMD:
