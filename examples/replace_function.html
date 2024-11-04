@@ -58,8 +58,8 @@ wail.addInstructionParser(OP_CALL, function(instrBytes) {
     const callTarget = reader.readVarUint32();
 
     if (callTarget == oldFuncIndex.i32()) {
-        reader.writeBuffer([opcode]);
-        reader.writeBuffer(VarUint32ToArray(replacementFuncIndex.i32()));
+        reader.copyBuffer([opcode]);
+        reader.copyBuffer(VarUint32ToArray(replacementFuncIndex.i32()));
 
         return reader.write();
     }
